@@ -17,8 +17,7 @@ const Home = () => {
 
     const [allTrips, setAllTrips] = useState([]);
     const [userInfo, setUserInfo] = useState(null);
-
-    const [isSearch, setIsSearch] = useState(false)
+    const [isSearch, setIsSearch] = useState(false);
 
     const navigate = useNavigate();
 
@@ -58,10 +57,9 @@ const Home = () => {
 
     // Delete trip
     const deleteTrip = async (data) => {
-        const tripId = data._id
         try {
-            const response = await api.delete("/delete-trip/"+ data._id);
-            if (response.data && !response.data.error === 'Trip deleted successfully') {
+            const response = await api.delete(`/delete-trip/${data._id}`);
+            if (response.data && !response.data.error) {
                 getAllTrips();
             }
         } catch (error) {
@@ -73,27 +71,31 @@ const Home = () => {
     const onSearchTrip = async (query) => {
         try {
             const response = await api.get('/search-trips', {
-                params: {query},
-        });
-        if (response.data && response.data.trips) {
-            setIsSearch(true);
-            setAllTrips(response.data.trips);
-        }
-        }
-        catch (error) {
+                params: { query },
+            });
+            if (response.data && response.data.trips) {
+                setIsSearch(true);
+                setAllTrips(response.data.trips);
+            }
+        } catch (error) {
             console.error("Error searching trips:", error);
         }
     }
 
+    // Clear search results
+    const handleClearSearch = () => {
+        setIsSearch(false);
+        getAllTrips();
+    }
 
     useEffect(() => {
         getUserInfo();
         getAllTrips();
-    }, [AddEditTrips, deleteTrip]);
+    }, [OpenAddEditModal.isShown]);
 
     return (
         <div>
-            <Navbar userInfo={userInfo} onSearchTrip={onSearchTrip} />
+            <Navbar userInfo={userInfo} onSearchTrip={onSearchTrip} handleClearSearch={handleClearSearch} />
 
             <div className='container mx-auto'>
                 <div className='grid grid-cols-3 gap-4 mt-8'>
@@ -105,8 +107,8 @@ const Home = () => {
                             content={item.content}
                             tags={item.tags}
                             isBookMarked={item.isBookMarked}
-                            onEdit={() => {handleEdit(item)}}
-                            onDelete={() => {deleteTrip(item)}}
+                            onEdit={() => handleEdit(item)}
+                            onDelete={() => deleteTrip(item)}
                             onBookMarkedTrip={() => { }}
                         />
                     ))}
@@ -115,20 +117,22 @@ const Home = () => {
 
             <button 
                 className='w-16 h-16 flex items-center justify-center rounded-2xl bg-primary hover:bg-blue-600 fixed right-10 bottom-10' 
-                onClick={() => {
-                    setOpenAddEditModal({
-                        isShown: true,
-                        data: null,
-                        type: "add",
-                    });
-                }}
+                onClick={() => setOpenAddEditModal({
+                    isShown: true,
+                    data: null,
+                    type: "add",
+                })}
             >
                 <MdAdd className="text-[32px] text-white" />
             </button>
 
             <Modal
                 isOpen={OpenAddEditModal.isShown}
-                onRequestClose={() => { }}
+                onRequestClose={() => setOpenAddEditModal({
+                    isShown: false,
+                    data: null,
+                    type: "add",
+                })}
                 style={{
                     overlay: {
                         backgroundColor: 'rgba(0, 0, 0, 0.2)',
@@ -140,17 +144,14 @@ const Home = () => {
                 <AddEditTrips 
                     type={OpenAddEditModal.type} 
                     tripData={OpenAddEditModal.data} 
-                    onClose={() => {
-                        setOpenAddEditModal({
-                            isShown: false,
-                            data: null,
-                            type: "add",
-                        });
-                    }} 
+                    onClose={() => setOpenAddEditModal({
+                        isShown: false,
+                        data: null,
+                        type: "add",
+                    })} 
                     getAllTrips={getAllTrips}
                 />
             </Modal>
-
         </div>
     )
 }
