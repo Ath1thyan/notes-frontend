@@ -20,6 +20,14 @@ const Home = () => {
 
     const navigate = useNavigate();
 
+    const handleEdit = (tripDetails) => {
+        setOpenAddEditModal({
+            isShown: true,
+            data: tripDetails,
+            type: "edit",
+        });
+    }
+
     // Get user info
     const getUserInfo = async () => {
         try {
@@ -49,7 +57,7 @@ const Home = () => {
     useEffect(() => {
         getUserInfo();
         getAllTrips();
-    }, []);
+    }, [AddEditTrips, getAllTrips]);
 
     return (
         <div>
@@ -65,7 +73,7 @@ const Home = () => {
                             content={item.content}
                             tags={item.tags}
                             isBookMarked={item.isBookMarked}
-                            onEdit={() => { }}
+                            onEdit={() => {handleEdit(item)}}
                             onDelete={() => { }}
                             onBookMarkedTrip={() => { }}
                         />
@@ -74,7 +82,7 @@ const Home = () => {
             </div>
 
             <button 
-                className='w-16 h-16 flex items-center justify-center rounded-2xl bg-primary hover:bg-blue-600 absolute right-10 bottom-10' 
+                className='w-16 h-16 flex items-center justify-center rounded-2xl bg-primary hover:bg-blue-600 fixed right-10 bottom-10' 
                 onClick={() => {
                     setOpenAddEditModal({
                         isShown: true,
@@ -107,6 +115,7 @@ const Home = () => {
                             type: "add",
                         });
                     }} 
+                    getAllTrips={getAllTrips}
                 />
             </Modal>
 
