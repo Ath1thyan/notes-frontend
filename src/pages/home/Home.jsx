@@ -18,6 +18,8 @@ const Home = () => {
     const [allTrips, setAllTrips] = useState([]);
     const [userInfo, setUserInfo] = useState(null);
 
+    const [isSearch, setIsSearch] = useState(false)
+
     const navigate = useNavigate();
 
     const handleEdit = (tripDetails) => {
@@ -54,14 +56,44 @@ const Home = () => {
         }
     }
 
+    // Delete trip
+    const deleteTrip = async (data) => {
+        const tripId = data._id
+        try {
+            const response = await api.delete("/delete-trip/"+ data._id);
+            if (response.data && !response.data.error === 'Trip deleted successfully') {
+                getAllTrips();
+            }
+        } catch (error) {
+            console.error("Error deleting trip:", error);
+        }
+    }
+
+    // Search trips
+    const onSearchTrip = async (query) => {
+        try {
+            const response = await api.get('/search-trips', {
+                params: {query},
+        });
+        if (response.data && response.data.trips) {
+            setIsSearch(true);
+            setAllTrips(response.data.trips);
+        }
+        }
+        catch (error) {
+            console.error("Error searching trips:", error);
+        }
+    }
+
+
     useEffect(() => {
         getUserInfo();
         getAllTrips();
-    }, [AddEditTrips, getAllTrips]);
+    }, [AddEditTrips, deleteTrip]);
 
     return (
         <div>
-            <Navbar userInfo={userInfo} />
+            <Navbar userInfo={userInfo} onSearchTrip={onSearchTrip} />
 
             <div className='container mx-auto'>
                 <div className='grid grid-cols-3 gap-4 mt-8'>
@@ -74,7 +106,7 @@ const Home = () => {
                             tags={item.tags}
                             isBookMarked={item.isBookMarked}
                             onEdit={() => {handleEdit(item)}}
-                            onDelete={() => { }}
+                            onDelete={() => {deleteTrip(item)}}
                             onBookMarkedTrip={() => { }}
                         />
                     ))}
