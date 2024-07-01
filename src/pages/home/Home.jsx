@@ -82,6 +82,19 @@ const Home = () => {
         }
     }
 
+    // Update bookmark status
+    const updateIsBookmarked = async (tripData) => {
+        const tripId = tripData._id;
+        try {
+            const response = await api.put(`/update-bookmark/${tripId}`, { "isBookMarked": !tripData.isBookMarked });
+            if (response.data && response.data.trip) {
+                getAllTrips();
+            }
+        } catch (err) {
+            console.error("Error updating bookmark status:", err);
+        }
+    }
+
     // Clear search results
     const handleClearSearch = () => {
         setIsSearch(false);
@@ -109,7 +122,7 @@ const Home = () => {
                             isBookMarked={item.isBookMarked}
                             onEdit={() => handleEdit(item)}
                             onDelete={() => deleteTrip(item)}
-                            onBookMarkedTrip={() => { }}
+                            onBookMarkedTrip={() => updateIsBookmarked(item)}
                         />
                     ))}
                 </div>
